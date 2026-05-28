@@ -10,6 +10,7 @@
 
 ```
 XProject/
+├── assets/                           # Логотипы проекта (SVG)
 ├── backend/                          # Java Spring Boot Backend
 │   ├── src/main/java/com/gamifiedpm/
 │   │   ├── config/                  # Конфигурация
@@ -21,15 +22,19 @@ XProject/
 │   │   └── service/                 # Бизнес-логика
 │   └── pom.xml                      # Maven зависимости
 │
-└── frontend/                         # React Frontend
-    ├── src/
-    │   ├── components/             # React компоненты (ui/, auth/)
-    │   ├── contexts/               # React контексты
-    │   ├── hooks/                  # useTasks, useProjects и др.
-    │   ├── services/               # API клиент (api.ts)
-    │   ├── utils/                  # Утилиты
-    │   └── styles/                  # Стили
-    └── package.json
+├── frontend/                         # React Frontend
+│   ├── src/
+│   │   ├── components/             # React компоненты (ui/, auth/)
+│   │   ├── contexts/               # React контексты
+│   │   ├── hooks/                  # useTasks, useProjects и др.
+│   │   ├── services/               # API клиент (api.ts)
+│   │   ├── utils/                  # Утилиты
+│   │   └── styles/                  # Стили
+│   └── package.json
+│
+├── docker-compose.yml                # Запуск для разработки
+├── docker-compose.prod.yml           # Запуск для продакшна
+└── Makefile                          # Команды деплоя
 ```
 
 ## Технологический стек
@@ -83,9 +88,9 @@ export JWT_SECRET=your-secret-key-min-256-bits
 
 Backend будет доступен на `http://localhost:8080`
 
-**Запуск всей платформы одной командой:** в корне проекта выполните `./run-platform.sh` (требуются Docker, Java 17+, Node.js 18+).
+**Запуск без Docker:** в корне проекта выполните `./run-platform-no-docker.sh`. Будет использован профиль `local`: встроенная БД H2 (файл в `backend/data/`), кеш в памяти, без PostgreSQL и Redis. Требуются только Java 17+ и Node.js 18+.
 
-**Запуск без Docker:** выполните `./run-platform-no-docker.sh`. Будет использован профиль `local`: встроенная БД H2 (файл в `backend/data/`), кеш в памяти, без PostgreSQL и Redis. Требуются только Java 17+ и Node.js 18+.
+**Запуск через Docker:** `docker compose up --build -d` или `make up`.
 
 ### Frontend
 
