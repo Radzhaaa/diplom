@@ -1,0 +1,139 @@
+spring:
+  application:
+    name: gamified-project-management
+  
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:gamified_pm}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  
+  flyway:
+    validate-on-migrate: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+  
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000 # 1 час в миллисекундах
+      cache-null-values: false
+  
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
+# Health check для фронтенда и скриптов запуска (все профили)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+app:
+  rate-limit:
+    enabled: ${APP_RATE_LIMIT_ENABLED:true}
+    requests-per-minute: ${APP_RATE_LIMIT_REQUESTS_PER_MINUTE:60}
+  jwt:
+    secret: ${JWT_SECRET:your-secret-key-change-in-production-min-256-bits}
+    expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days
+  
+  cors:
+    # Для Vite: 3000 (vite.config) или 5173 (дефолт Vite)
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173}
+    allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+  
+  file:
+    upload-dir: ${FILE_UPLOAD_DIR:./uploads}
+    max-size: 10485760 # 10MB
+  
+  gamification:
+    xp:
+      task-completed-low: 10
+      task-completed-medium: 25
+      task-completed-high: 50
+      task-completed-on-time-bonus: 10
+      project-completed: 100
+      comment-added: 5
+    level:
+      base-xp: 100
+      multiplier: 1.5
+  
+  login:
+    max-attempts: ${LOGIN_MAX_ATTEMPTS:5}
+    block-duration-minutes: ${LOGIN_BLOCK_DURATION_MINUTES:15}
+
+  email:
+    verification:
+      required: ${EMAIL_VERIFICATION_REQUIRED:false}
+
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+
+  ai:
+    enabled: ${AI_ENABLED:false}
+    provider: ${AI_PROVIDER:ollama} # ollama (local), gemini, openai, openrouter
+    api-key: ${AI_API_KEY:ollama} # Ollama не требует ключа, любое значение
+    model: ${AI_MODEL:llama3.2}
+    base-url: ${AI_BASE_URL:http://localhost:11434/v1} # Ollama локальный сервер
+  
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: alpha
+    tagsSorter: alpha
+    disable-swagger-default-url: true
+  api-docs:
+    path: /v3/api-docs
+  show-actuator: false
+
+logging:
+  level:
+    root: INFO
+    com.gamifiedpm: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+
+
+

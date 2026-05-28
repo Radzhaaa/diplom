@@ -1,0 +1,97 @@
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: xproject-postgres
+    environment:
+      POSTGRES_DB: gamified_pm
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: xproject-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xproject-backend
+    env_file: ./backend/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CORS_ORIGINS: http://localhost:3000,https://xproject.art,http://xproject.art,https://www.xproject.art
+      AI_BASE_URL: https://openrouter.ai/api/v1
+      # Hibernate создаёт схему (Flyway-миграции V1 — placeholder)
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_FLYWAY_ENABLED: "false"
+      # Spring Boot 3.x пути для Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+      # In-memory кеш вместо Redis (JDK serializer не поддерживает non-Serializable DTOs)
+      SPRING_CACHE_TYPE: simple
+      # EMAIL_VERIFICATION_REQUIRED берётся из backend/.env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: xproject-frontend
+    ports:
+      - "80:3000"
+      - "443:3443"
+    volumes:
+      - /etc/ssl/xproject/fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
+      - /etc/ssl/xproject/privkey.pem:/etc/ssl/certs/privkey.pem:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge

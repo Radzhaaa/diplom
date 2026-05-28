@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>XProject — Управление проектами</title>
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="XProject" />
+  <link rel="apple-touch-icon" href="/XP_color.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Zen+Tokyo+Zoo&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #1a1a1a;
+      color: #ffffff;
+      font-family: "Montserrat", "Inter", "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+    #root { min-height: 100%; }
+  </style>
+</head>
+<body>
+  <script>window.global = window.globalThis || window;</script>
+  <div id="root">
+    <div id="root-fallback" style="display:flex;align-items:center;justify-content:center;height:100%;width:100%;background:#1a1a1a;color:#fff;font-family:system-ui,sans-serif;">
+      Загрузка…
+    </div>
+  </div>
+  <script type="module" src="/src/main.tsx"></script>
+  <script>
+    window.addEventListener('error', function(e) {
+      var fallback = document.getElementById('root-fallback');
+      if (fallback && e.filename && e.filename.indexOf('main') !== -1) {
+        fallback.innerHTML = '<div style="text-align:center;padding:2rem;"><p style="margin-bottom:1rem;">Ошибка загрузки приложения</p><p style="color:#888;font-size:0.9rem;">Проверьте консоль (F12) и что backend запущен: <code style="background:#333;padding:2px 6px;">./run-platform-no-docker.sh</code></p><button onclick="location.reload()" style="margin-top:1rem;padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:6px;cursor:pointer;">Обновить</button></div>';
+      }
+    });
+  </script>
+</body>
+</html>

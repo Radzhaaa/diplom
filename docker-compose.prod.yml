@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: xproject-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-gamified_pm}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: xproject-redis
+    command: redis-server
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xproject-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-gamified_pm}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      FILE_UPLOAD_DIR: /app/uploads
+      FILE_MAX_SIZE: ${FILE_MAX_SIZE:-10MB}
+      APP_RATE_LIMIT_ENABLED: true
+      APP_RATE_LIMIT_REQUESTS_PER_MINUTE: 60
+      LOG_FILE: /app/logs/application.log
+      SPRING_FLYWAY_ENABLED: "false"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      AI_ENABLED: ${AI_ENABLED:-false}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-llama-3.3-70b-versatile}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.groq.com/openai/v1}
+      MAIL_HOST: ${MAIL_HOST:-smtp.mail.ru}
+      MAIL_PORT: ${MAIL_PORT:-465}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      EMAIL_VERIFICATION_REQUIRED: ${EMAIL_VERIFICATION_REQUIRED:-false}
+      FRONTEND_URL: ${FRONTEND_URL}
+    volumes:
+      - uploads:/app/uploads
+      - logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8080' 2>/dev/null && exit 0 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+        VITE_WS_URL: ${FRONTEND_URL}/ws
+    container_name: xproject-frontend
+    ports:
+      - "80:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:
+  logs:
+
+networks:
+  app-network:
+    driver: bridge

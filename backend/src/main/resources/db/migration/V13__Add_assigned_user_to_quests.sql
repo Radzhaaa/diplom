@@ -1,0 +1,2 @@
+ALTER TABLE quests ADD COLUMN IF NOT EXISTS assigned_to_user_id BIGINT
+    REFERENCES users(id) ON DELETE SET NULL;

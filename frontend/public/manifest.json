@@ -1,0 +1,16 @@
+{
+  "name": "XProject — Управление проектами",
+  "short_name": "XProject",
+  "description": "Геймифицированная платформа управления проектами",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "/XP_color.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

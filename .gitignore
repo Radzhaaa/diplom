@@ -1,0 +1,43 @@
+# Claude Code
+.claude/
+
+# IDE
+.idea/
+*.iml
+*.iws
+.vscode/
+
+# macOS
+.DS_Store
+Icon?
+
+# Node / Frontend
+node_modules/
+build/
+dist/
+.env.local
+.env*.local
+
+# Java / Maven
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.mvn/wrapper/maven-wrapper-home/
+*.class
+*.jar
+*.war
+
+# Logs
+*.log
+logs/
+
+# Env / secrets
+.env
+*.env
+
+# Docker volumes
+data/
+
+# PlantUML diagrams (local only)
+diagrams/
+ROADMAP.md
+.env.prod

@@ -1,0 +1,145 @@
+spring:
+  application:
+    name: gamified-project-management
+  
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:gamified_pm}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: ${DB_POOL_MIN:10}
+      connection-timeout: 30000
+      leak-detection-threshold: 60000
+  
+  flyway:
+    enabled: true
+    validate-on-migrate: true
+    baseline-on-migrate: false
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+  
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: ${REDIS_POOL_MAX:16}
+        max-idle: ${REDIS_POOL_MAX:16}
+        min-idle: ${REDIS_POOL_MIN:4}
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000 # 1 час
+      cache-null-values: false
+  
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: ${FILE_MAX_SIZE:10MB}
+      max-request-size: ${FILE_MAX_SIZE:10MB}
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never # В production не показываем детали ошибок
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+app:
+  jwt:
+    secret: ${JWT_SECRET} # ОБЯЗАТЕЛЬНО установить в переменных окружения
+    expiration: ${JWT_EXPIRATION:86400000} # 24 часа
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 дней
+  
+  cors:
+    allowed-origins: ${CORS_ORIGINS:} # ОБЯЗАТЕЛЬНО установить в переменных окружения
+    allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+  
+  file:
+    upload-dir: ${FILE_UPLOAD_DIR:/app/uploads}
+    max-size: ${FILE_MAX_SIZE_BYTES:10485760} # 10MB
+  
+  gamification:
+    xp:
+      task-completed-low: 10
+      task-completed-medium: 25
+      task-completed-high: 50
+      task-completed-on-time-bonus: 10
+      project-completed: 100
+      comment-added: 5
+    level:
+      base-xp: 100
+      multiplier: 1.5
+  
+  frontend:
+    url: ${FRONTEND_URL:https://xproject.app}
+
+  ai:
+    enabled: ${AI_ENABLED:false}
+    provider: ${AI_PROVIDER:openai}
+    api-key: ${AI_API_KEY:}
+    model: ${AI_MODEL:gpt-3.5-turbo}
+    base-url: ${AI_BASE_URL:https://api.openai.com/v1}
+  
+  rate-limit:
+    enabled: ${APP_RATE_LIMIT_ENABLED:true}
+    requests-per-minute: ${APP_RATE_LIMIT_REQUESTS_PER_MINUTE:60}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    root: INFO
+    com.gamifiedpm: INFO # В production INFO, не DEBUG
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ${LOG_FILE:/app/logs/application.log}
+    max-size: 10MB
+    max-history: 30
+    total-size-cap: 1GB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
